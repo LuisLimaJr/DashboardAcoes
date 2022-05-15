@@ -1,0 +1,97 @@
+---
+title: "Suas Ações"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyquant)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(DT)
+
+prices <- read.csv("prices.csv") %>%
+  mutate(date = as.Date(date))
+
+tabela_periodo <- data.frame(
+  periodo = c("1M", "6M", "1A", "10A"),
+  dias = c(30, 180, 365, 3650)
+)
+
+
+
+```
+
+
+
+
+Column {.sidebar}
+---------------------------------
+
+```{r}
+selectInput(
+  "acao", label = "Escolha sua ação",
+  choices = c(
+    "BBAS3", "BBDC4", "ITUB4", "SANB11", "BSLI3", 
+    "BPAC11","BPAN4","MODL11","BNBR3","ABCB4"
+  )
+)
+selectInput(
+  "periodo", label = "Escolha o periodo",
+  choices = c("1M", "6M", "1A", "10A")
+)
+
+```
+
+
+
+ROW {data-width=500}
+-----------------------------------------------------------------------
+
+### Tendência
+
+```{r}
+
+renderPlotly({
+  periodo <- Sys.Date() - filter(tabela_periodo, periodo == input$periodo)$dias
+
+  prices %>% 
+    filter(date >= periodo, symbol == input$acao) %>% 
+    ggplot() +
+    aes(x = date, y = adjusted) +
+    geom_line() +
+    labs(x = "", y = "Cotação") +
+    ggtitle(label = input$acao) +
+    theme(
+      panel.background = element_blank(),
+      plot.title = element_text(size=22)
+    )
+})
+
+```
+
+
+
+### Todas as Tendências
+
+```{r}
+
+```
+
+
+Row {data-width=500}
+-----------------------------------------------------------------------
+
+### Cotação
+
+```{r}
+
+```
+
+
+
